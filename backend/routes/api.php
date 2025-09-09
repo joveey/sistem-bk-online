@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\StudentManagementController; // Impor controller di atas
 
 /*
 |--------------------------------------------------------------------------
@@ -12,21 +13,18 @@ use App\Http\Controllers\Api\ChatController;
 |--------------------------------------------------------------------------
 */
 
-// === Rute Publik (Autentikasi) ===
+// === Rute Publik (Untuk Login) ===
 Route::post('/student-login', [AuthController::class, 'studentLogin']);
 Route::post('/guru/login', [AuthController::class, 'guruLogin']);
 
-// === Rute Terproteksi (Membutuhkan Token) ===
+// === Rute Terproteksi (Membutuhkan Token Autentikasi) ===
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/students', [App\Http\Controllers\Api\StudentManagementController::class, 'store']); // Membuat siswa baru
-    Route::get('/students', [App\Http\Controllers\Api\StudentManagementController::class, 'index']); // Melihat daftar siswa
-    Route::put('/students/{id}', [App\Http\Controllers\Api\StudentManagementController::class, 'update']); // Update siswa
-    Route::delete('/students/{id}', [App\Http\Controllers\Api\StudentManagementController::class, 'destroy']); // Hapus siswa
-    // Auth
+    
+    // Rute umum untuk user yang terautentikasi (Siswa & Guru)
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Reports
+    // Rute untuk Laporan (Reports)
     Route::get('/reports', [ReportController::class, 'index']);
     Route::post('/reports', [ReportController::class, 'store']);
     Route::get('/reports/{report}', [ReportController::class, 'show']);
@@ -34,7 +32,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/reports/{report}/schedule', [ReportController::class, 'schedule']);
     Route::put('/reports/{report}/complete', [ReportController::class, 'complete']);
 
-    // Chats
+    // Rute untuk Pesan (Chats)
     Route::get('/reports/{report}/chats', [ChatController::class, 'index']);
     Route::post('/reports/{report}/chats', [ChatController::class, 'store']);
+
+
+    // === Rute Khusus untuk Guru/Konselor ===
+    Route::prefix('guru')->group(function () {
+        // Rute untuk Manajemen Siswa oleh Guru
+        Route::get('/students', [StudentManagementController::class, 'index']);       // GET /api/guru/students
+        Route::post('/students', [StudentManagementController::class, 'store']);      // POST /api/guru/students
+        Route::get('/students/{id}', [StudentManagementController::class, 'show']);     // GET /api/guru/students/{id}
+        Route::put('/students/{id}', [StudentManagementController::class, 'update']);     // PUT /api/guru/students/{id}
+        Route::delete('/students/{id}', [StudentManagementController::class, 'destroy']); // DELETE /api/guru/students/{id}
+    });
+
 });
+

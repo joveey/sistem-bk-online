@@ -3,56 +3,62 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Chat;
 use App\Models\Report;
-use App\Models\Student;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class ChatController extends Controller
 {
-    // Mengambil semua chat dalam sebuah laporan
+    /**
+     * Menampilkan semua chat untuk sebuah laporan.
+     */
     public function index(Request $request, Report $report)
     {
+        // Otorisasi: Pastikan user bisa melihat laporan ini terlebih dahulu
         $user = $request->user();
+        $isOwner = ($user instanceof \App\Models\Student && $report->student_id == $user->id);
+        $isCounselor = ($user instanceof \App\Models\User && $report->counselor_id == $user->id);
 
-        // Otorisasi: Siswa hanya bisa lihat chat dari laporannya sendiri
-        if ($user instanceof Student && $report->student_id !== $user->id) {
+        if (!$isOwner && !$isCounselor) {
             return response()->json(['message' => 'Akses ditolak.'], 403);
         }
 
-        // 'sender' adalah relasi polimorfik yang kita definisikan di model Chat
-        $chats = $report->chats()->with('sender')->latest()->get();
-
-        return response()->json($chats);
+        return response()->json($report->chats()->orderBy('created_at', 'asc')->get());
     }
 
-    // Mengirim pesan baru
+    /**
+     * Menyimpan pesan chat baru.
+     */
     public function store(Request $request, Report $report)
     {
-        $user = $request->user();
+        // --- LOGIKA KUNCI ADA DI SINI ---
 
-        // Otorisasi: Pastikan user berhak mengakses chat ini
-        if ($user instanceof Student && $report->student_id !== $user->id) {
-            return response()->json(['message' => 'Akses ditolak.'], 403);
-        }
-        if ($user instanceof \App\Models\User && $report->counselor_id !== $user->id) {
-             return response()->json(['message' => 'Akses ditolak.'], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
+        // 1. Validasi input
+        $validated = $request->validate([
             'message' => 'required|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        // 2. Otorisasi: Siapa yang boleh mengirim pesan?
+        $user = $request->user();
+        $isOwner = ($user instanceof \App\Models\Student && $report->student_id == $user->id);
+        $isCounselor = ($user instanceof \App\Models\User && $report->counselor_id == $user->id);
+
+        // Tolak jika user bukan pemilik laporan ATAU konselor yang menanganinya
+        if (!$isOwner && !$isCounselor) {
+            return response()->json(['message' => 'Anda tidak diizinkan mengirim pesan di laporan ini.'], 403);
         }
 
-        $chat = $report->chats()->create([
-            'message' => $request->message,
-            'sender_id' => $user->id,
-            'sender_type' => get_class($user) // Otomatis mengisi tipe model (App\Models\User atau App\Models\Student)
-        ]);
+        // 3. Buat dan simpan chat
+        $chat = new Chat();
+        $chat->report_id = $report->id;
+        $chat->message = $validated['message'];
+        
+        // Gunakan relasi polimorfik untuk menyimpan info pengirim
+        $chat->sender()->associate($user);
 
-        return response()->json($chat->load('sender'), 201);
+        $chat->save();
+
+        return response()->json($chat, 201);
     }
 }
+

@@ -11,21 +11,30 @@ use Illuminate\Support\Facades\Validator;
 
 class ReportController extends Controller
 {
-    // Mengambil daftar laporan berdasarkan role user
+    /**
+     * Mengambil daftar laporan berdasarkan role user
+     */
     public function index(Request $request)
     {
         $user = $request->user();
+        $query = Report::with('student:id,name'); // Eager load nama siswa
 
-        if ($user instanceof User) { // Jika user adalah Guru/Konselor
-            $reports = Report::with('student', 'counselor')->latest()->get();
-        } else { // Jika user adalah Siswa
-            $reports = $user->reports()->with('counselor')->latest()->get();
+        // Cek tipe model dari user yang terautentikasi
+        if ($user instanceof \App\Models\Student) {
+            // Jika user adalah siswa, filter berdasarkan student_id
+            $query->where('student_id', $user->id);
         }
+        // Jika bukan siswa (berarti konselor), tidak perlu filter tambahan,
+        // sehingga akan mengambil semua laporan.
 
-        return response()->json($reports);
+        $reports = $query->orderBy('created_at', 'desc')->get();
+
+        return response()->json(['data' => $reports]);
     }
 
-    // Membuat laporan baru (hanya siswa)
+    /**
+     * Membuat laporan baru (hanya siswa)
+     */
     public function store(Request $request)
     {
         if (!$request->user() instanceof Student) {
@@ -50,10 +59,12 @@ class ReportController extends Controller
 
         $report = Report::create($data);
 
-        return response()->json($report, 201);
+        return response()->json(['data' => $report], 201);
     }
 
-    // Menampilkan detail satu laporan
+    /**
+     * Menampilkan detail satu laporan
+     */
     public function show(Request $request, Report $report)
     {
         $user = $request->user();
@@ -66,7 +77,9 @@ class ReportController extends Controller
         return response()->json($report->load('student', 'counselor', 'chats'));
     }
 
-    // Menerima laporan (hanya guru)
+    /**
+     * Menerima laporan (hanya guru)
+     */
     public function accept(Request $request, Report $report)
     {
         if (!$request->user() instanceof User) {
@@ -81,7 +94,9 @@ class ReportController extends Controller
         return response()->json($report);
     }
 
-    // Mengatur jadwal pertemuan (hanya guru)
+    /**
+     * Mengatur jadwal pertemuan (hanya guru)
+     */
     public function schedule(Request $request, Report $report)
     {
         if (!$request->user() instanceof User || $report->type !== 'offline') {
@@ -101,7 +116,9 @@ class ReportController extends Controller
         return response()->json($report);
     }
 
-    // Menyelesaikan laporan (hanya guru)
+    /**
+     * Menyelesaikan laporan (hanya guru)
+     */
     public function complete(Request $request, Report $report)
     {
         if (!$request->user() instanceof User) {
@@ -113,3 +130,4 @@ class ReportController extends Controller
         return response()->json($report);
     }
 }
+
