@@ -4,10 +4,9 @@ import animate from 'tailwindcss-animate'
 export default {
   darkMode: ['class'],
   content: [
-    './pages/**/*.{ts,tsx,vue}',
-    './components/**/*.{ts,tsx,vue}',
-    './app/**/*.{ts,tsx,vue}',
-    './src/**/*.{ts,tsx,vue}',
+  './index.html',
+  './src/**/*.{vue,js,ts,jsx,tsx}',
+  './components/**/*.{vue,js,ts,jsx,tsx}',
   ],
   theme: {
     container: {
