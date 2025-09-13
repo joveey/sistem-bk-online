@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useDataStore } from '@/stores/dataStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const dataStore = useDataStore();
+const authStore = useAuthStore();
 const router = useRouter();
 
 const newStudent = ref({ name: '', class: '', unique_code: '' });
@@ -56,6 +58,10 @@ const handleCreateStudent = async () => {
       creationError.value = 'Terjadi kesalahan pada server.';
     }
   }
+};
+
+const handleLogout = async () => {
+  await authStore.logout();
 };
 
 const navigateToDetail = (reportId) => {
@@ -150,7 +156,7 @@ const formatDate = (dateString) => {
               <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Joveey</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">Konselor BK</p>
             </div>
-            <button class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Logout">
+            <button @click="handleLogout" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Logout">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
               </svg>
