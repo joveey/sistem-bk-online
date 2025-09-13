@@ -5,9 +5,10 @@ import { useDataStore } from '@/stores/dataStore';
 import { useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import MotivationalVideos from '@/components/MotivationalVideos.vue';
 
 const authStore = useAuthStore();
 const dataStore = useDataStore();
@@ -92,8 +93,10 @@ const getStatusIcon = (status) => {
   }
 };
 
+// --- PERBAIKAN DI SINI ---
 const formatDate = (dateString) => {
   if (!dateString) return 'Baru saja';
+  // Mengganti toLocaleDateDate menjadi toLocaleDateString
   return new Date(dateString).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -104,7 +107,6 @@ const formatDate = (dateString) => {
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900/20">
-    <!-- Header -->
     <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
@@ -137,9 +139,7 @@ const formatDate = (dateString) => {
       </div>
     </header>
 
-    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Welcome Section -->
       <div class="mb-8">
         <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 text-white relative overflow-hidden">
           <div class="absolute inset-0 bg-black/10"></div>
@@ -153,13 +153,11 @@ const formatDate = (dateString) => {
               <span class="text-sm text-indigo-100">Konseling tersedia 24/7</span>
             </div>
           </div>
-          <!-- Decorative elements -->
           <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
           <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
         </div>
       </div>
 
-      <!-- Statistics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card class="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
           <CardContent class="p-6">
@@ -226,8 +224,7 @@ const formatDate = (dateString) => {
         </Card>
       </div>
 
-      <!-- Reports List -->
-      <Card class="border-0 shadow-xl">
+      <Card class="border-0 shadow-xl mb-12">
         <CardHeader>
           <div class="flex justify-between items-center">
             <div>
@@ -317,9 +314,11 @@ const formatDate = (dateString) => {
           </div>
         </CardContent>
       </Card>
+      
+      <MotivationalVideos />
+
     </main>
 
-    <!-- Create Report Modal -->
     <Dialog v-model:open="isModalOpen">
       <DialogContent class="sm:max-w-[600px]">
         <DialogHeader>
