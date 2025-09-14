@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue';
+import { ref, onMounted, computed, nextTick, watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import { useDataStore } from '@/stores/dataStore';
@@ -73,7 +73,6 @@ const formatDate = (dateString) => {
 };
 
 // Auto scroll to bottom when new messages arrive
-const { chats: watchedChats } = dataStore;
 const unwatchChats = ref(null);
 onMounted(() => {
   unwatchChats.value = watch(() => chats.value.length, () => {
